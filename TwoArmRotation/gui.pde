@@ -93,14 +93,18 @@ void moveToPoint(PNT P) {
   float y = P.y-400;
   float angle2;
   float angle1;
+  
   if (x > 0) {
-    angle2 = -acos((sq(x)+sq(y)-sq(armLength_1)-sq(armLength_2)) / (2*armLength_1*armLength_2));
-    angle1 = atan(y/x)-atan((armLength_2*sin(angle2))/(armLength_1+armLength_2*cos(angle2)));
+    angle2 = 3.0/2*PI - acos((sq(x)+sq(y)-sq(armLength_1)-sq(armLength_2)) / (2*armLength_1*armLength_2));
+    angle1 = atan(y/x)-atan((armLength_2*cos(angle2))/(armLength_1-armLength_2*sin(angle2)));
   } else {
-    angle2 = acos((sq(x)+sq(y)-sq(armLength_1)-sq(armLength_2)) / (2*armLength_1*armLength_2));
-    angle1 = PI + atan(y/x)-atan((armLength_2*sin(angle2))/(armLength_1+armLength_2*cos(angle2)));
+    angle2 = acos((sq(x)+sq(y)-sq(armLength_1)-sq(armLength_2)) / (2*armLength_1*armLength_2)) - PI/2;
+    angle1 = PI + atan(y/x)-atan((armLength_2*cos(angle2))/(armLength_1-armLength_2*sin(angle2)));
   }
+  System.out.println("Angle 1: " + angle1*180/PI);
+  System.out.println("Angle 2: " + angle2*180/PI);
+  System.out.println("(" + x + "," + y + ")");
   VCT firstVector = Rotated(V(armLength_1, 0),angle1);
   A = P(Origin, firstVector);
-  B = P(A, armLength_2, Rotated(Normalized(firstVector),angle2));
+  B = P(A, armLength_2, Rotated(Normalized(firstVector),angle2+PI/2));
 }
