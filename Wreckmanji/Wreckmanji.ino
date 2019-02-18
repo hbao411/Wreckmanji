@@ -15,7 +15,9 @@ typedef enum State {
   UP,
   DOWN
 } states;
-//these are the coordinates of the final destination when moving in a straight line
+//these are the coordinates of the start/final destination when moving in a straight line
+double start_x;
+double start_y;
 double final_x;
 double final_y;
 //these are the coordinates you want to get to
@@ -45,6 +47,8 @@ void setup() {
   linear_movement = false;
   timer = 0;
   state = WAITING;
+  //start_x = 0;
+  //start_y = 0;
 }
 
 void loop() {
@@ -56,8 +60,8 @@ void loop() {
       if (linear_movement) {
         if (final_x != curr_x || final_y != curr_y) {
           timer += 0.1;
-          x = LERP(curr_x, final_x, timer);
-          y = LERP(curr_y, final_y, timer);
+          x = LERP(start_x, final_x, timer);
+          y = LERP(start_y, final_y, timer);
         }
       }
       if (x != curr_x || y != curr_y) {
@@ -83,6 +87,6 @@ void loop() {
   }
 }
 
-double LERP(double curr_x, double x, double t) {
-  return curr_x + t * (x - curr_x);
+double LERP(double start_x, double x, double t) {
+  return start_x + t * (x - start_x);
 }
