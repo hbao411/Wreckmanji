@@ -1,7 +1,7 @@
 #include <Servo.h>
 #include<math.h>
-const int servo1 = 8;
-const int servo2 = 9;
+const int servo1 = 9;
+const int servo2 = 10;
 Servo bottomServo;
 Servo topServo;
 const int readSwitch = 11;
@@ -49,6 +49,8 @@ void setup() {
   state = WAITING;
   //start_x = 0;
   //start_y = 0;
+  //final_x = 100;
+  //final_y = 100;
 }
 
 void loop() {
@@ -87,6 +89,11 @@ void loop() {
   }
 }
 
-double LERP(double start_x, double x, double t) {
-  return start_x + t * (x - start_x);
+/**
+ * Linear interpolation
+ * Returns the value along the line between start_x and final_x based on the value of t
+ * t ranges from 0 to 1 (at 0 the function returns start_x and at 1 it returns final_x)
+ */
+double LERP(double start_x, double final_x, double t) {
+  return start_x + t * (final_x - start_x);
 }
