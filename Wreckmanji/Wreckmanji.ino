@@ -8,6 +8,7 @@ const int readSwitch = 11;
 const int bottom_arm = 100;
 const int top_arm = 100;
 typedef enum State {
+  BEGINNING,
   WAITING,
   MOVEMENT,
   END,
@@ -21,9 +22,6 @@ double start_x;
 double start_y;
 double final_x;
 double final_y;
-//these are the coordinates you want to get to
-double x;
-double y;
 //the current x and y coordinates of the servos
 double curr_x;
 double curr_y;
@@ -42,30 +40,33 @@ void setup() {
   topServo.attach(servo2);
   curr_x = 0;
   curr_y = 0;
-  x = 0;
-  y = 0;
   new_top_angle = 90;
   new_bottom_angle = 90;
   linear_movement = true;
   timer = 0;
-  state = WAITING;
+  state = BEGINNING;
   start_x = 0;
   start_y = 0;
-  final_x = 50;
-  final_y = 50;
-  bottomServo.write(90);
-  delay(500); 
-  topServo.write(90);
-  delay(500);
+  final_x = 5;
+  final_y = 5;
+  
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   //eventually we'll implement the other stuff, for now only WAITING and MOVEMENt
   switch (state) {
+    case BEGINNING:
+      bottomServo.write(90);
+      delay(500); 
+      topServo.write(90);
+      delay(500);
+      state = WAITING;
+      Serial.print("We have printed!\n");
+      break;
     //calculate the angle you need to move to and set state to movement
     case WAITING:
-      if (linear_movement) {
+      /*if (linear_movement) {
         if (final_x != curr_x || final_y != curr_y) {
           if (timer != 1) {
             timer += 0.05;
@@ -76,8 +77,39 @@ void loop() {
           x = LERP(start_x, final_x, timer);
           y = LERP(start_y, final_y, timer);
         }
+      }*/
+      if (final_x != curr_x || final_y != curr_y) {
+        //moved calculating coordinates elsewhere
+        /*if (x > 0) {
+          new_top_angle = (int) ((1.5 * PI - acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm))) * 180 / PI);
+          new_bottom_angle = (int) ((atan((float) y/x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
+          
+        } else {
+          new_top_angle = (int) ((acos((pow(x, 2) + pow(y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm) - PI/2)) * 180 / PI);
+          new_bottom_angle = (int) ((PI + atan((float) y/x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
+        }*/
+        state = MOVEMENT;
       }
-      //if (x != curr_x || y != curr_y) {
+      
+      /*if (timer == 1) {
+        state = END;
+      } else {
+        state = MOVEMENT;
+      }*/
+      break;
+    case MOVEMENT:
+      start_x = curr_x;
+      start_y = curr_y;
+      double x;
+      double y;
+      for (double timer = 0.05; timer <= 1; timer+= 0.05) {
+        
+        x = LERP(start_x, final_x, timer);
+        Serial.print(x, DEC);
+        Serial.print("\n");
+        y = LERP(start_y, final_y, timer);
+        Serial.print("y");
+        Serial.print("\n");
         if (x > 0) {
           new_top_angle = (int) ((1.5 * PI - acos((pow(x, 2) + pow(y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm))) * 180 / PI);
           new_bottom_angle = (int) ((atan((float) y/x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
@@ -86,30 +118,27 @@ void loop() {
           new_top_angle = (int) ((acos((pow(x, 2) + pow(y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm) - PI/2)) * 180 / PI);
           new_bottom_angle = (int) ((PI + atan((float) y/x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
         }
-      //}
-      
-      if (timer == 1) {
-        state = END;
-      } else {
-        state = MOVEMENT;
-      }
-      break;
-    case MOVEMENT:
-      if (timer != 1) {
+        Serial.print("top: ");
+        Serial.print(new_top_angle);
+        Serial.print("\n");
+        Serial.print("bottom: ");
+        Serial.print(new_bottom_angle);
+        Serial.print("\n");
         bottomServo.write(new_bottom_angle);
-        delay(100); 
         topServo.write(new_top_angle);
-        delay(100);
-        curr_x = x;
-        curr_y = y;
-        state = WAITING;
-      } else {
-        state = END;
+        delay(2000);
       }
+      curr_x = final_x;
+      curr_y = final_y;
+      Serial.print("Ive done nothing wrong\n");
+      
+      state = WAITING;
+      
       break;
     case END:
       exit(0);
   }
+  delay(100);
 }
 
 /**
