@@ -100,10 +100,10 @@ void loop() {
     case MOVEMENT:
       start_x = curr_x;
       start_y = curr_y;
+      
       double x;
       double y;
-      for (double timer = 0.05; timer <= 1; timer+= 0.05) {
-        //this calculates the next coordinates to go to
+      while (start_x != final_x || start_y != final_y) {
         x = LERP(start_x, final_x, timer);
         Serial.print(x, DEC);
         Serial.print("\n");
@@ -124,12 +124,13 @@ void loop() {
         Serial.print("bottom: ");
         Serial.print(new_bottom_angle);
         Serial.print("\n");
-        //writes the new angles
         bottomServo.write(new_bottom_angle);
         topServo.write(new_top_angle);
+        start_x = x;
+        start_y = y;
+        //delay before moving, this currently does about 2 seconds for any movement
         delay(100);
       }
-      #should set x y coords to that it won't move anymore
       curr_x = final_x;
       curr_y = final_y;
       Serial.print("Ive done nothing wrong\n");
@@ -140,7 +141,7 @@ void loop() {
     case END:
       exit(0);
   }
-  delay(200);
+  delay(100);
 }
 
 /**
@@ -149,5 +150,5 @@ void loop() {
  * t ranges from 0 to 1 (at 0 the function returns start_x and at 1 it returns final_x)
  */
 double LERP(double start_x, double final_x, double t) {
-  return start_x + t * (final_x - start_x);
+  return start_x + 1;
 }
