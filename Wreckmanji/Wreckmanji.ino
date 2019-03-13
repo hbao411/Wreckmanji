@@ -38,17 +38,17 @@ void setup() {
   // put your setup code here, to run once:
   bottomServo.attach(servo1);
   topServo.attach(servo2);
-  curr_x = 100;
-  curr_y = 100;
-  new_top_angle = 122;
-  new_bottom_angle = 104;
+  curr_x = 0;
+  curr_y = 0;
+  new_top_angle = 90;
+  new_bottom_angle = 90;
   linear_movement = true;
   timer = 0;
   state = BEGINNING;
-  start_x = 100;
-  start_y = 100;
-  final_x = 0;
-  final_y = 0;
+  start_x = 0;
+  start_y = 0;
+  final_x = -107;
+  final_y = 95;
   
 }
 
@@ -102,7 +102,7 @@ void loop() {
       start_y = curr_y;
       double x;
       double y;
-      for (double timer = 0.05; timer <= 1; timer+= 0.05) {
+      /*for (double timer = 0.05; timer <= 1; timer+= 0.05) {
         //this calculates the next coordinates to go to
         x = LERP(start_x, final_x, timer);
         Serial.print(x, DEC);
@@ -132,8 +132,26 @@ void loop() {
       //should set x y coords to that it won't move anymore
       curr_x = final_x;
       curr_y = final_y;
-      Serial.print("Ive done nothing wrong\n");
-      
+      Serial.print("Ive done nothing wrong\n");*/
+      if (x < 0) {
+        new_top_angle = (int) ((acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm) - PI/2)) * 180 / PI);
+        Serial.print(new_top_angle);
+        Serial.print("\n");
+        
+        new_bottom_angle = (int) ((PI + atan((float) final_y/final_x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
+        Serial.print(new_bottom_angle);
+        Serial.print("\n");
+      } else {
+        new_top_angle = (int) ((1.5 * PI - acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm))) * 180 / PI);
+        new_bottom_angle = (int) ((atan((float) final_y/final_x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
+        Serial.print(new_top_angle);
+        Serial.print("\n");
+        Serial.print(new_bottom_angle);
+        Serial.print("\n");
+        
+      }
+      bottomServo.write(new_bottom_angle);
+      topServo.write(new_top_angle);
       state = END;
       
       break;
