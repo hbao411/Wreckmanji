@@ -101,13 +101,13 @@ void loop() {
       start_x = curr_x;
       start_y = curr_y;
       
-      double x;
-      double y;
-      while (start_x != final_x || start_y != final_y) {
-        x = LERP(start_x, final_x, timer);
+      double x = start_x;
+      double y = start_y;
+      while (x != final_x || y != final_y) {
+        x = LERP(start_x, final_x, 1);
         Serial.print(x, DEC);
         Serial.print("\n");
-        y = LERP(start_y, final_y, timer);
+        y = LERP(start_y, final_y, (final_y - y)/(final_x - x));
         Serial.print("y");
         Serial.print("\n");
         if (x > 0) {
@@ -129,7 +129,7 @@ void loop() {
         start_x = x;
         start_y = y;
         //delay before moving, this currently does about 2 seconds for any movement
-        delay(100);
+        delay(10);
       }
       curr_x = final_x;
       curr_y = final_y;
@@ -150,5 +150,11 @@ void loop() {
  * t ranges from 0 to 1 (at 0 the function returns start_x and at 1 it returns final_x)
  */
 double LERP(double start_x, double final_x, double t) {
-  return start_x + 1;
+  if (final_x > start_x) {
+    return start_x + t;
+  } else if (final_x < start_x) {
+    return start_x - 1;
+  } else {
+    return start_x;
+  }
 }

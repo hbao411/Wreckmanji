@@ -38,17 +38,17 @@ void setup() {
   // put your setup code here, to run once:
   bottomServo.attach(servo1);
   topServo.attach(servo2);
-  curr_x = 0;
-  curr_y = 0;
-  new_top_angle = 90;
-  new_bottom_angle = 90;
+  curr_x = 100;
+  curr_y = 100;
+  new_top_angle = 122;
+  new_bottom_angle = 104;
   linear_movement = true;
   timer = 0;
   state = BEGINNING;
-  start_x = 0;
-  start_y = 0;
-  final_x = 5;
-  final_y = 5;
+  start_x = 100;
+  start_y = 100;
+  final_x = 0;
+  final_y = 0;
   
 }
 
@@ -57,9 +57,9 @@ void loop() {
   //eventually we'll implement the other stuff, for now only WAITING and MOVEMENt
   switch (state) {
     case BEGINNING:
-      bottomServo.write(90);
+      bottomServo.write(new_top_angle);
       delay(500); 
-      topServo.write(90);
+      topServo.write(new_bottom_angle);
       delay(500);
       state = WAITING;
       Serial.print("We have printed!\n");
@@ -129,12 +129,12 @@ void loop() {
         topServo.write(new_top_angle);
         delay(100);
       }
-      #should set x y coords to that it won't move anymore
+      //should set x y coords to that it won't move anymore
       curr_x = final_x;
       curr_y = final_y;
       Serial.print("Ive done nothing wrong\n");
       
-      state = WAITING;
+      state = END;
       
       break;
     case END:
