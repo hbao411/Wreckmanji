@@ -133,22 +133,22 @@ void loop() {
       curr_x = final_x;
       curr_y = final_y;
       Serial.print("Ive done nothing wrong\n");*/
-      if (x < 0) {
-        new_top_angle = (int) ((acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm) - PI/2)) * 180 / PI);
+      if (final_x < 0) {
+        double new_top_angle_radians = acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm)) - PI/2;
+        new_top_angle = (int) (new_top_angle_radians * 180 / PI);
+        new_bottom_angle = (int) ((PI + atan((float) final_y/final_x) - atan(top_arm*cos(new_top_angle_radians)/(bottom_arm-top_arm*sin(new_top_angle_radians)))) * 180 / PI);
         Serial.print(new_top_angle);
         Serial.print("\n");
-        
-        new_bottom_angle = (int) ((PI + atan((float) final_y/final_x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
         Serial.print(new_bottom_angle);
         Serial.print("\n");
       } else {
-        new_top_angle = (int) ((1.5 * PI - acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm))) * 180 / PI);
-        new_bottom_angle = (int) ((atan((float) final_y/final_x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
+        double new_top_angle_radians = (1.5 * PI - acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm)));
+        new_top_angle = (int) (new_top_angle_radians * 180 / PI);
+        new_bottom_angle = (int) ((atan((float) final_y/final_x) - atan(top_arm*cos(new_top_angle_radians)/(bottom_arm-top_arm*sin(new_top_angle_radians)))) * 180 / PI);
         Serial.print(new_top_angle);
         Serial.print("\n");
         Serial.print(new_bottom_angle);
         Serial.print("\n");
-        
       }
       bottomServo.write(new_bottom_angle);
       topServo.write(new_top_angle);
