@@ -104,30 +104,34 @@ void loop() {
       double x = start_x;
       double y = start_y;
       while (x != final_x || y != final_y) {
-        x = LERP(start_x, final_x, 1);
+        x = LERP(curr_x, final_x, 1);
         Serial.print(x, DEC);
         Serial.print("\n");
-        y = LERP(start_y, final_y, (final_y - y)/(final_x - x));
+        y = LERP(curr_y, final_y, (final_y - start_y)/(final_x - start_x));
         Serial.print("y");
         Serial.print("\n");
-        if (x > 0) {
-          new_top_angle = (int) ((1.5 * PI - acos((pow(x, 2) + pow(y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm))) * 180 / PI);
-          new_bottom_angle = (int) ((atan((float) y/x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
-          
+        if (final_x < 0) {
+          double new_top_angle_radians = acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm)) - PI/2;
+          new_top_angle = (int) (new_top_angle_radians * 180 / PI);
+          new_bottom_angle = (int) ((PI + atan((float) final_y/final_x) - atan(top_arm*cos(new_top_angle_radians)/(bottom_arm-top_arm*sin(new_top_angle_radians)))) * 180 / PI);
+          Serial.print(new_top_angle);
+          Serial.print("\n");
+          Serial.print(new_bottom_angle);
+          Serial.print("\n");
         } else {
-          new_top_angle = (int) ((acos((pow(x, 2) + pow(y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm) - PI/2)) * 180 / PI);
-          new_bottom_angle = (int) ((PI + atan((float) y/x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
+          double new_top_angle_radians = (1.5 * PI - acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm)));
+          new_top_angle = (int) (new_top_angle_radians * 180 / PI);
+          new_bottom_angle = (int) ((atan((float) final_y/final_x) - atan(top_arm*cos(new_top_angle_radians)/(bottom_arm-top_arm*sin(new_top_angle_radians)))) * 180 / PI);
+          Serial.print(new_top_angle);
+          Serial.print("\n");
+          Serial.print(new_bottom_angle);
+          Serial.print("\n");
         }
-        Serial.print("top: ");
-        Serial.print(new_top_angle);
-        Serial.print("\n");
-        Serial.print("bottom: ");
-        Serial.print(new_bottom_angle);
-        Serial.print("\n");
         bottomServo.write(new_bottom_angle);
         topServo.write(new_top_angle);
-        start_x = x;
-        start_y = y;
+        //sets start_x and start_y to 
+        curr_x = x;
+        curr_y = y;
         //delay before moving, this currently does about 2 seconds for any movement
         delay(10);
       }
@@ -153,7 +157,7 @@ double LERP(double start_x, double final_x, double t) {
   if (final_x > start_x) {
     return start_x + t;
   } else if (final_x < start_x) {
-    return start_x - 1;
+    return start_x - t;
   } else {
     return start_x;
   }
