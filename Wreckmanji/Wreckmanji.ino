@@ -47,8 +47,8 @@ void setup() {
   state = BEGINNING;
   start_x = 0;
   start_y = 0;
-  final_x = -107;
-  final_y = 95;
+  final_x = 270;
+  final_y = 342;
   
 }
 
@@ -133,6 +133,8 @@ void loop() {
       curr_x = final_x;
       curr_y = final_y;
       Serial.print("Ive done nothing wrong\n");*/
+      int old_top_angle = new_top_angle;
+      int old_bottom_angle = new_bottom_angle;
       if (final_x < 0) {
         double new_top_angle_radians = acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm)) - PI/2;
         new_top_angle = (int) (new_top_angle_radians * 180 / PI);
@@ -150,10 +152,18 @@ void loop() {
         Serial.print(new_bottom_angle);
         Serial.print("\n");
       }
-      bottomServo.write(new_bottom_angle);
-      topServo.write(new_top_angle);
+      while (old_top_angle != new_top_angle && old_bottom_angle != new_bottom_angle) {
+        if (old_bottom_angle != new_bottom_angle) {
+          bottomServo.write((old_bottom_angle < new_bottom_angle) ? ++old_bottom_angle : --old_bottom_angle);
+        }
+        if (old_top_angle != new_top_angle) {
+          topServo.write((old_top_angle < new_top_angle) ? --old_top_angle : ++old_top_angle);
+        }
+        delay(50);
+      }
+//      bottomServo.write(new_bottom_angle);
+//      topServo.write(new_top_angle);
       state = END;
-      
       break;
     case END:
       exit(0);
