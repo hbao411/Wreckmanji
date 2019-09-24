@@ -102,37 +102,6 @@ void loop() {
       start_y = curr_y;
       double x;
       double y;
-      /*for (double timer = 0.05; timer <= 1; timer+= 0.05) {
-        //this calculates the next coordinates to go to
-        x = LERP(start_x, final_x, timer);
-        Serial.print(x, DEC);
-        Serial.print("\n");
-        y = LERP(start_y, final_y, timer);
-        Serial.print("y");
-        Serial.print("\n");
-        if (x > 0) {
-          new_top_angle = (int) ((1.5 * PI - acos((pow(x, 2) + pow(y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm))) * 180 / PI);
-          new_bottom_angle = (int) ((atan((float) y/x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
-          
-        } else {
-          new_top_angle = (int) ((acos((pow(x, 2) + pow(y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm) - PI/2)) * 180 / PI);
-          new_bottom_angle = (int) ((PI + atan((float) y/x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
-        }
-        Serial.print("top: ");
-        Serial.print(new_top_angle);
-        Serial.print("\n");
-        Serial.print("bottom: ");
-        Serial.print(new_bottom_angle);
-        Serial.print("\n");
-        //writes the new angles
-        bottomServo.write(new_bottom_angle);
-        topServo.write(new_top_angle);
-        delay(100);
-      }
-      //should set x y coords to that it won't move anymore
-      curr_x = final_x;
-      curr_y = final_y;
-      Serial.print("Ive done nothing wrong\n");*/
       if (final_x < 0) {
         double new_top_angle_radians = acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm)) - PI/2;
         new_top_angle = (int) (new_top_angle_radians * 180 / PI);
