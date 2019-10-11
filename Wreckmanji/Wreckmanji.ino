@@ -1,47 +1,62 @@
 #include <Servo.h>
 #include<math.h>
+
+/**
+ * Code determining two arm movement
+ * TODO: Separate code into arm movement and game state
+ */
+
+// Servo Pins
 const int servo1 = 9;
 const int servo2 = 10;
-Servo bottomServo;
-Servo topServo;
-const int readSwitch = 11;
+
+// Servo Objects
+Servo top_servo;
+Servo bottom_servo;
+
+// Arm Frame of Reference
 const int bottom_arm = 100;
 const int top_arm = 100;
+
+// Arm State
 typedef enum State {
   BEGINNING,
   WAITING,
   MOVEMENT,
-  END,
-  LEFT,
-  RIGHT,
-  UP,
-  DOWN
+  END
 } states;
+State state;
+
 //these are the coordinates of the start/final destination when moving in a straight line
 double start_x;
 double start_y;
 double final_x;
 double final_y;
-//the current x and y coordinates of the servos
+
+// Current Linear Coordinates of Arms
 double curr_x;
 double curr_y;
-//used to keep track of time when moving in a line
+
+// Time while Moving
 double timer;
-//the new angles we want the servos to move to
-int new_top_angle;
-int new_bottom_angle;
-//true if we want the magnet to move in a straight line
+
+// Straight Line Movement
 bool linear_movement;
-State state;
+
+// Default Arm Movement Delay Time
+int arm_delay_time;
+
+// State Delay Time
+int state_delay_time
+
+
+// Initialize Default Values
 void setup() {
   Serial.begin(9600);
-  // put your setup code here, to run once:
   bottomServo.attach(servo1);
   topServo.attach(servo2);
   curr_x = 0;
   curr_y = 0;
-  new_top_angle = 90;
-  new_bottom_angle = 90;
   linear_movement = true;
   timer = 0;
   state = BEGINNING;
@@ -49,127 +64,84 @@ void setup() {
   start_y = 0;
   final_x = 270;
   final_y = 342;
-  
+  arm_delay_time = 50;
+  state_delay_time = 200;
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  //eventually we'll implement the other stuff, for now only WAITING and MOVEMENt
+  
   switch (state) {
+    
+    // Move Arms to Start Position
     case BEGINNING:
-      bottomServo.write(new_top_angle);
-      delay(500); 
-      topServo.write(new_bottom_angle);
-      delay(500);
+      int new_top_angle = 90;
+      int new_bottom_angle = 90;
+      servo_write(new_top_angle, new_bottom_angle, arm_delay_time);
       state = WAITING;
-      Serial.print("We have printed!\n");
       break;
-    //calculate the angle you need to move to and set state to movement
+
+    // TODO: Wait for new Input
     case WAITING:
-      /*if (linear_movement) {
-        if (final_x != curr_x || final_y != curr_y) {
-          if (timer != 1) {
-            timer += 0.05;
-          } else {
-            exit(0);
-          }
-          Serial.println(timer);
-          x = LERP(start_x, final_x, timer);
-          y = LERP(start_y, final_y, timer);
-        }
-      }*/
       if (final_x != curr_x || final_y != curr_y) {
-        //moved calculating coordinates elsewhere
-        /*if (x > 0) {
-          new_top_angle = (int) ((1.5 * PI - acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm))) * 180 / PI);
-          new_bottom_angle = (int) ((atan((float) y/x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
-          
-        } else {
-          new_top_angle = (int) ((acos((pow(x, 2) + pow(y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm) - PI/2)) * 180 / PI);
-          new_bottom_angle = (int) ((PI + atan((float) y/x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
-        }*/
         state = MOVEMENT;
       }
-      
-      /*if (timer == 1) {
-        state = END;
-      } else {
-        state = MOVEMENT;
-      }*/
       break;
+
+    // Actual Movement of Arm to New Position
     case MOVEMENT:
       start_x = curr_x;
       start_y = curr_y;
       double x;
       double y;
-      /*for (double timer = 0.05; timer <= 1; timer+= 0.05) {
-        //this calculates the next coordinates to go to
-        x = LERP(start_x, final_x, timer);
-        Serial.print(x, DEC);
-        Serial.print("\n");
-        y = LERP(start_y, final_y, timer);
-        Serial.print("y");
-        Serial.print("\n");
-        if (x > 0) {
-          new_top_angle = (int) ((1.5 * PI - acos((pow(x, 2) + pow(y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm))) * 180 / PI);
-          new_bottom_angle = (int) ((atan((float) y/x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
-          
-        } else {
-          new_top_angle = (int) ((acos((pow(x, 2) + pow(y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm) - PI/2)) * 180 / PI);
-          new_bottom_angle = (int) ((PI + atan((float) y/x) - atan(top_arm*cos(new_top_angle)/(bottom_arm-top_arm*sin(new_top_angle)))) * 180 / PI);
-        }
-        Serial.print("top: ");
-        Serial.print(new_top_angle);
-        Serial.print("\n");
-        Serial.print("bottom: ");
-        Serial.print(new_bottom_angle);
-        Serial.print("\n");
-        //writes the new angles
-        bottomServo.write(new_bottom_angle);
-        topServo.write(new_top_angle);
-        delay(100);
-      }
-      //should set x y coords to that it won't move anymore
-      curr_x = final_x;
-      curr_y = final_y;
-      Serial.print("Ive done nothing wrong\n");*/
       int old_top_angle = new_top_angle;
       int old_bottom_angle = new_bottom_angle;
       if (final_x < 0) {
         double new_top_angle_radians = acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm)) - PI/2;
         new_top_angle = (int) (new_top_angle_radians * 180 / PI);
         new_bottom_angle = (int) ((PI + atan((float) final_y/final_x) - atan(top_arm*cos(new_top_angle_radians)/(bottom_arm-top_arm*sin(new_top_angle_radians)))) * 180 / PI);
-        Serial.print(new_top_angle);
-        Serial.print("\n");
-        Serial.print(new_bottom_angle);
-        Serial.print("\n");
       } else {
         double new_top_angle_radians = (1.5 * PI - acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm*top_arm)));
         new_top_angle = (int) (new_top_angle_radians * 180 / PI);
         new_bottom_angle = (int) ((atan((float) final_y/final_x) - atan(top_arm*cos(new_top_angle_radians)/(bottom_arm-top_arm*sin(new_top_angle_radians)))) * 180 / PI);
-        Serial.print(new_top_angle);
-        Serial.print("\n");
-        Serial.print(new_bottom_angle);
-        Serial.print("\n");
       }
-      while (old_top_angle != new_top_angle && old_bottom_angle != new_bottom_angle) {
-        if (old_bottom_angle != new_bottom_angle) {
-          bottomServo.write((old_bottom_angle < new_bottom_angle) ? ++old_bottom_angle : --old_bottom_angle);
-        }
-        if (old_top_angle != new_top_angle) {
-          topServo.write((old_top_angle < new_top_angle) ? --old_top_angle : ++old_top_angle);
-        }
-        delay(50);
-      }
-//      bottomServo.write(new_bottom_angle);
-//      topServo.write(new_top_angle);
       state = END;
       break;
+
+    // Temporary End of Program
     case END:
       exit(0);
+      
   }
-  delay(200);
+  delay(state_delay_time);
 }
+
+//TODO: Change to Radians!
+
+/**
+ * Finds New Top Angle Given New Coordinates
+ */
+int find_top_angle() {
+    double rads = acos((pow(final_x, 2) + pow(final_y, 2) - pow(top_arm, 2) - pow(bottom_arm, 2))/(2 * bottom_arm * top_arm));
+    if (final_x < 0) {
+      return (int) ((rads - PI / 2) * 180 / PI);
+    } else {
+      return (int) ((1.5 * PI - rads) * 180 / PI);
+    }
+}
+
+
+/**
+ * Finds New Bottom Angle Given New Coordinates
+ */
+int find_bottom_angle(double final_x, double final_y, double top_angle_radians) {
+  double rads = atan((float) final_y / final_x) - atan(top_arm * cos(new_top_angle_radians)/(bottom_arm - top_arm * sin(new_top_angle_radians)));
+  if (final_x < 0) {
+    return (int) ((PI + rads) * 180 / PI);
+  } else {
+    return (int) (rads * 180 / PI);
+  }
+}
+
 
 /**
  * Linear interpolation
@@ -178,4 +150,23 @@ void loop() {
  */
 double LERP(double start_x, double final_x, double t) {
   return start_x + t * (final_x - start_x);
+}
+
+
+/**
+ * Writes new angles to top and bottom servos given a delay_time
+ * Recommend a delay of around 50
+ */
+void servo_write(int new_top_angle, int new_bottom_angle, int delay_time) {
+  int old_top_angle = top_servo.read();
+  int old_bottom_angle = bottom_servo.read();
+  while (old_top_angle != new_top_angle && old_bottom_angle != new_bottom_angle) {
+        if (old_top_angle != new_top_angle) {
+          top_servo.write((old_top_angle < new_top_angle) ? --old_top_angle : ++old_top_angle);
+        }
+        if (old_bottom_angle != new_bottom_angle) {
+          bottom_servo.write((old_bottom_angle < new_bottom_angle) ? ++old_bottom_angle : --old_bottom_angle);
+        }
+        delay(delay_time);
+  }
 }
