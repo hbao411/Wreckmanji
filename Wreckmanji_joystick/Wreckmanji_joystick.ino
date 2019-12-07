@@ -13,8 +13,15 @@ const int servo2 = 10;
 //assuming analog joystick
 const int input = A0;
 
-//resistor constant value
-const int R_G = 100000;
+const double res_LEFT = 121000;
+const double res_RIGHT = 192.74;
+const double res_const = 98490;
+const double res_center_Y = 82576;
+const double res_Up = 159488.01;
+const double res_Down = 96.28;
+const double res_center = 48741.0;
+
+
 //electromagnet pin
 const int magPin = 12;
 
@@ -108,18 +115,34 @@ void loop() {
       int readVal = analogRead(magPin);
       long voltage = float(readVal) / 1023.0 * 5.0;
       long R_x = (R_G) * (5.0 - voltage)/(voltage);
-      if (R_x <= R_xnorm + 10) || (R_x >= R_xnorm - 10) {
-        
+      if (R_x < 50000 && R_x > 40000) {
+        state = WAITING;
+      } else {
+        state = MOVEMENT;
       }
     }
 
     // Actual Movement of Arm to New Position
     case MOVEMENT: {
+      int readVal = analogRead(magPin);
+      long voltage = float(readVal) / 1023.0 * 5.0;
+      long R_x = (R_G) * (5.0 - voltage)/(voltage);
+      if (R_X > 50000) {
+        //move left with speed dependent on the ratio; max movement is 10 units per movement
+        long ratio = (1 - (res_LEFT - R_X) / (res_LEFT - res_center));
+        int movement = 10 * ratio;
+        dest_x = curr_x - movement;
+      } else if (R_X < 40000) {
+        long ratio = (1 - (R_X - res_RIGHT) / (res_center - res_RIGHT));
+        int movement = 10 * ratio;
+        dest_x = curr_x - movement;
+      } else {
+        state = WAITING;
+      }
       double top_angle_radians = find_top_angle();
       top_angle = convert_to_degrees(top_angle_radians);
       bottom_angle = convert_to_degrees(find_bottom_angle(top_angle_radians));
       servo_write(top_angle, bottom_angle, arm_delay_time);
-      state = END;
       break;
     }
 
